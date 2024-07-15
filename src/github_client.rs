@@ -1,7 +1,8 @@
+#![allow(dead_code, unused)]
 use crate::models::{CreateIssue, Issue, UpdateIssue};
 use chrono::{DateTime, Utc};
-use reqwest::blocking::Client;
-use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, USER_AGENT};
+use reqwest::blocking::{Client, Response};
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
 use std::error::Error;
 
 const GITHUB_API_URL: &str = "https://api.github.com";
@@ -31,6 +32,10 @@ impl GithubClient {
             HeaderValue::from_str(&format!("token {}", self.token)).unwrap(),
         );
         headers.insert(USER_AGENT, HeaderValue::from_static("rust-github-client"));
+        headers.insert(
+            ACCEPT,
+            HeaderValue::from_str("application/vnd.github+json").unwrap(),
+        );
         headers
     }
 
@@ -48,18 +53,18 @@ impl GithubClient {
         Ok(issues)
     }
 
-    pub fn create_issue(&self, issue: CreateIssue) -> Result<Issue, Box<dyn Error>> {
+    pub fn create_issue(&self, issue: CreateIssue) -> Result<Response, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues",
             GITHUB_API_URL, self.owner, self.repo
         );
+        let mut headers = self.build_headers();
         let created_issue = self
             .client
             .post(&url)
-            .headers(self.build_headers())
+            .headers(headers)
             .json(&issue)
-            .send()?
-            .json()?;
+            .send()?;
         Ok(created_issue)
     }
 
