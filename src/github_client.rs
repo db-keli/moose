@@ -1,8 +1,8 @@
 #![allow(dead_code, unused)]
-use crate::models::{CreateIssue, Issue, UpdateIssue};
+use crate::models::{CreateIssue, CreateIssueComment, Issue, IssueComment, UpdateIssue};
 use chrono::{DateTime, Utc};
 use reqwest::blocking::{Client, Response};
-use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, USER_AGENT};
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use std::error::Error;
 
 const GITHUB_API_URL: &str = "https://api.github.com";
@@ -35,6 +35,10 @@ impl GithubClient {
         headers.insert(
             ACCEPT,
             HeaderValue::from_str("application/vnd.github+json").unwrap(),
+        );
+        headers.insert(
+            "x-Github-Api-Version",
+            HeaderValue::from_static("2022-11-28"),
         );
         headers
     }
@@ -97,5 +101,41 @@ impl GithubClient {
             },
         )?;
         Ok(())
+    }
+
+    pub fn comment_issue(
+        &self,
+        number: u64,
+        comment: CreateIssueComment,
+    ) -> Result<Response, Box<dyn Error>> {
+        let url = format!(
+            "{}/repos/{}/{}/issues/{}/comments",
+            GITHUB_API_URL, self.owner, self.repo, number
+        );
+        let mut headers = self.build_headers();
+        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+
+        let comment = self
+            .client
+            .post(&url)
+            .headers(headers)
+            .json(&comment)
+            .send()?;
+
+        Ok((comment))
+    }
+
+    pub fn list_issue_comments(&self, number: u64) -> Result<Vec<IssueComment>, Box<dyn Error>> {
+        let url = format!(
+            "{}/repos/{}/{}/issues/{}/comments",
+            GITHUB_API_URL, self.owner, self.repo, number
+        );
+        let comments = self
+            .client
+            .get(&url)
+            .headers(self.build_headers())
+            .send()?
+            .json()?;
+        Ok(comments)
     }
 }

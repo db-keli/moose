@@ -26,3 +26,15 @@ pub struct UpdateIssue {
     pub body: Option<String>,
     pub state: Option<String>,
 }
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CreateIssueComment {
+    pub body: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct IssueComment {
+    pub body: String,
+    pub user: Option<User>,
+}
