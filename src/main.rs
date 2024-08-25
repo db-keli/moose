@@ -1,7 +1,6 @@
-#![allow(dead_code, unused)]
-
 mod github_client;
 mod models;
+mod issues;
 
 use chrono::{DateTime, Utc};
 use dotenv::dotenv;
