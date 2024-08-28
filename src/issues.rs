@@ -1,13 +1,14 @@
+#![allow(dead_code, unused_imports)]
+use crate::github_client::GithubClient;
 use crate::models::{CreateIssue, CreateIssueComment, Issue, IssueComment, UpdateIssue};
 use chrono::{DateTime, Utc};
 use reqwest::blocking::{Client, Response};
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use std::error::Error;
-use crate::github_client::GithubClient;
 
 const GITHUB_API_URL: &str = "https://api.github.com";
 
-impl  GithubClient{
+impl GithubClient {
     pub fn list_issues(&self) -> Result<Vec<Issue>, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues",
@@ -22,25 +23,20 @@ impl  GithubClient{
         Ok(issues)
     }
 
-    pub fn create_issue(&self, issue: CreateIssue) -> Result<Response, Box<dyn Error>> {
+    pub fn create_issue(&self, issue: &CreateIssue) -> Result<Response, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues",
             GITHUB_API_URL, self.owner, self.repo
         );
-        let mut headers = self.build_headers();
-        let created_issue = self
-            .client
-            .post(&url)
-            .headers(headers)
-            .json(&issue)
-            .send()?;
+        let headers = self.build_headers();
+        let created_issue = self.client.post(&url).headers(headers).json(issue).send()?;
         Ok(created_issue)
     }
 
     pub fn update_issue(
         &self,
         issue_number: u64,
-        issue: UpdateIssue,
+        issue: &UpdateIssue,
     ) -> Result<Issue, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}",
@@ -50,7 +46,7 @@ impl  GithubClient{
             .client
             .patch(&url)
             .headers(self.build_headers())
-            .json(&issue)
+            .json(issue)
             .send()?
             .json()?;
         Ok(updated_issue)
@@ -59,7 +55,7 @@ impl  GithubClient{
     pub fn close_issue(&self, issue_number: u64) -> Result<(), Box<dyn Error>> {
         self.update_issue(
             issue_number,
-            UpdateIssue {
+            &UpdateIssue {
                 title: None,
                 body: None,
                 state: Some("closed".into()),
@@ -71,7 +67,7 @@ impl  GithubClient{
     pub fn comment_issue(
         &self,
         number: u64,
-        comment: CreateIssueComment,
+        comment: &CreateIssueComment,
     ) -> Result<Response, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}/comments",
@@ -84,10 +80,10 @@ impl  GithubClient{
             .client
             .post(&url)
             .headers(headers)
-            .json(&comment)
+            .json(comment)
             .send()?;
 
-        Ok((comment))
+        Ok(comment)
     }
 
     pub fn list_issue_comments(&self, number: u64) -> Result<Vec<IssueComment>, Box<dyn Error>> {
@@ -102,5 +98,16 @@ impl  GithubClient{
             .send()?
             .json()?;
         Ok(comments)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn auth_test() {
+        let client =
+            GithubClient::new("owner".to_string(), "repo".to_string(), "token".to_string());
     }
 }

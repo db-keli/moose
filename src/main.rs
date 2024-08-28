@@ -1,11 +1,14 @@
+#![allow(dead_code, unused_imports)]
+
 mod github_client;
-mod models;
 mod issues;
+mod models;
+mod repository;
 
 use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use github_client::GithubClient;
-use models::{CreateIssue, IssueComment, UpdateIssue, CreateIssueComment};
+use models::{CreateIssue, CreateIssueComment, IssueComment, UpdateIssue};
 use std::collections::HashSet;
 use std::io::Read;
 use std::time::Duration;
@@ -36,24 +39,24 @@ fn main() -> () {
     let comment = CreateIssueComment { body: message };
 
     // Comment on issue
-    let status = client.comment_issue(number, comment);
+    let status = client.comment_issue(number, &comment);
     println!("{:?}", status.unwrap().status());
 
     let mut seen_issues: HashSet<u64> = HashSet::new();
 
-    loop {
-        let issues = client.list_issues().unwrap();
+    let issues = client.list_issues().unwrap();
 
-        for issue in issues {
-            if !seen_issues.contains(&issue.number) {
-                println!("New issue found: {:?}", issue);
-                let issue_comments = client.list_issue_comments(issue.number).unwrap();
-                println!("Issue comments: {:?}", issue_comments);
-                seen_issues.insert(issue.number);
-            }
+    for issue in issues {
+        if !seen_issues.contains(&issue.number) {
+            println!("New issue found: {:?}", issue);
+            let issue_comments = client.list_issue_comments(issue.number).unwrap();
+            println!("Issue comments: {:?}", issue_comments);
+            seen_issues.insert(issue.number);
         }
     }
 
-    let close_status = client.close_issue(4).unwrap();
-    println!("{:?}", close_status);
+    let user_repositories = client.get_repositories(None).unwrap();
+    for repo in user_repositories {
+        println!("{:?}", repo);
+    }
 }
