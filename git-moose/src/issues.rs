@@ -9,10 +9,10 @@ use std::error::Error;
 const GITHUB_API_URL: &str = "https://api.github.com";
 
 impl GithubClient {
-    pub fn list_issues(&self) -> Result<Vec<Issue>, Box<dyn Error>> {
+    pub fn list_issues(&self, repo: &str) -> Result<Vec<Issue>, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues",
-            GITHUB_API_URL, self.owner, self.repo
+            GITHUB_API_URL, self.owner, repo
         );
         let issues = self
             .client
@@ -23,10 +23,10 @@ impl GithubClient {
         Ok(issues)
     }
 
-    pub fn create_issue(&self, issue: &CreateIssue) -> Result<Response, Box<dyn Error>> {
+    pub fn create_issue(&self, issue: &CreateIssue, repo: &str) -> Result<Response, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues",
-            GITHUB_API_URL, self.owner, self.repo
+            GITHUB_API_URL, self.owner, repo
         );
         let headers = self.build_headers();
         let created_issue = self.client.post(&url).headers(headers).json(issue).send()?;
@@ -37,10 +37,11 @@ impl GithubClient {
         &self,
         issue_number: u64,
         issue: &UpdateIssue,
+        repo: &str
     ) -> Result<Issue, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}",
-            GITHUB_API_URL, self.owner, self.repo, issue_number
+            GITHUB_API_URL, self.owner, repo, issue_number
         );
         let updated_issue = self
             .client
@@ -52,7 +53,7 @@ impl GithubClient {
         Ok(updated_issue)
     }
 
-    pub fn close_issue(&self, issue_number: u64) -> Result<(), Box<dyn Error>> {
+    pub fn close_issue(&self, issue_number: u64, repo: &str) -> Result<(), Box<dyn Error>> {
         self.update_issue(
             issue_number,
             &UpdateIssue {
@@ -60,6 +61,7 @@ impl GithubClient {
                 body: None,
                 state: Some("closed".into()),
             },
+            repo
         )?;
         Ok(())
     }
@@ -68,10 +70,11 @@ impl GithubClient {
         &self,
         number: u64,
         comment: &CreateIssueComment,
+        repo: &str
     ) -> Result<Response, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}/comments",
-            GITHUB_API_URL, self.owner, self.repo, number
+            GITHUB_API_URL, self.owner, repo, number
         );
         let mut headers = self.build_headers();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
@@ -86,10 +89,10 @@ impl GithubClient {
         Ok(comment)
     }
 
-    pub fn list_issue_comments(&self, number: u64) -> Result<Vec<IssueComment>, Box<dyn Error>> {
+    pub fn list_issue_comments(&self, number: u64, repo: &str) -> Result<Vec<IssueComment>, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}/comments",
-            GITHUB_API_URL, self.owner, self.repo, number
+            GITHUB_API_URL, self.owner, repo, number
         );
         let comments = self
             .client
@@ -108,6 +111,6 @@ mod tests {
     #[test]
     fn auth_test() {
         let client =
-            GithubClient::new("owner".to_string(), "repo".to_string(), "token".to_string());
+            GithubClient::new("owner".to_string(), "token".to_string());
     }
 }

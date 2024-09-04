@@ -10,17 +10,15 @@ pub struct GithubClient {
     pub client: Client,
     pub token: String,
     pub owner: String,
-    pub repo: String,
 }
 
 impl GithubClient {
-    pub fn new(token: String, owner: String, repo: String) -> Self {
+    pub fn new(token: String, owner: String) -> Self {
         let client = Client::new();
         GithubClient {
             client,
             token,
             owner,
-            repo,
         }
     }
 
