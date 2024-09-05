@@ -45,3 +45,13 @@ pub struct UserRepos {
     pub owner: User,
     pub description: Option<String>,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PullRequest {
+    pub id: i64,
+    pub title: String,
+    pub body: String,
+    pub html_url: String,
+    pub issues_url: String, //Should later be a local link in the app
+    pub commits: String,
+}

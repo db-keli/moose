@@ -1,16 +1,17 @@
-pub mod github_client;
-pub mod models;
-pub mod issues;
 pub mod commits;
-pub mod repository;
-pub mod database_models;
-pub mod schema;
 pub mod crud;
+pub mod database_models;
+pub mod github_client;
+pub mod issues;
+pub mod models;
+pub mod repository;
+pub mod schema;
 
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use dotenvy::dotenv;
 
+pub const GITHUB_API_URL: &str = "https://api.github.com";
 
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();

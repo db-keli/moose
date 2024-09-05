@@ -4,8 +4,6 @@ use reqwest::blocking::{Client, Response};
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use std::error::Error;
 
-const GITHUB_API_URL: &str = "https://api.github.com";
-
 pub struct GithubClient {
     pub client: Client,
     pub token: String,

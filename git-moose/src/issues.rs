@@ -1,19 +1,15 @@
 #![allow(dead_code, unused_imports)]
 use crate::github_client::GithubClient;
 use crate::models::{CreateIssue, CreateIssueComment, Issue, IssueComment, UpdateIssue};
+use crate::GITHUB_API_URL;
 use chrono::{DateTime, Utc};
 use reqwest::blocking::{Client, Response};
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use std::error::Error;
 
-const GITHUB_API_URL: &str = "https://api.github.com";
-
 impl GithubClient {
     pub fn list_issues(&self, repo: &str) -> Result<Vec<Issue>, Box<dyn Error>> {
-        let url = format!(
-            "{}/repos/{}/{}/issues",
-            GITHUB_API_URL, self.owner, repo
-        );
+        let url = format!("{}/repos/{}/{}/issues", GITHUB_API_URL, self.owner, repo);
         let issues = self
             .client
             .get(&url)
@@ -23,11 +19,12 @@ impl GithubClient {
         Ok(issues)
     }
 
-    pub fn create_issue(&self, issue: &CreateIssue, repo: &str) -> Result<Response, Box<dyn Error>> {
-        let url = format!(
-            "{}/repos/{}/{}/issues",
-            GITHUB_API_URL, self.owner, repo
-        );
+    pub fn create_issue(
+        &self,
+        issue: &CreateIssue,
+        repo: &str,
+    ) -> Result<Response, Box<dyn Error>> {
+        let url = format!("{}/repos/{}/{}/issues", GITHUB_API_URL, self.owner, repo);
         let headers = self.build_headers();
         let created_issue = self.client.post(&url).headers(headers).json(issue).send()?;
         Ok(created_issue)
@@ -37,7 +34,7 @@ impl GithubClient {
         &self,
         issue_number: u64,
         issue: &UpdateIssue,
-        repo: &str
+        repo: &str,
     ) -> Result<Issue, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}",
@@ -61,7 +58,7 @@ impl GithubClient {
                 body: None,
                 state: Some("closed".into()),
             },
-            repo
+            repo,
         )?;
         Ok(())
     }
@@ -70,7 +67,7 @@ impl GithubClient {
         &self,
         number: u64,
         comment: &CreateIssueComment,
-        repo: &str
+        repo: &str,
     ) -> Result<Response, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}/comments",
@@ -89,7 +86,11 @@ impl GithubClient {
         Ok(comment)
     }
 
-    pub fn list_issue_comments(&self, number: u64, repo: &str) -> Result<Vec<IssueComment>, Box<dyn Error>> {
+    pub fn list_issue_comments(
+        &self,
+        number: u64,
+        repo: &str,
+    ) -> Result<Vec<IssueComment>, Box<dyn Error>> {
         let url = format!(
             "{}/repos/{}/{}/issues/{}/comments",
             GITHUB_API_URL, self.owner, repo, number
@@ -110,7 +111,6 @@ mod tests {
 
     #[test]
     fn auth_test() {
-        let client =
-            GithubClient::new("owner".to_string(), "token".to_string());
+        let client = GithubClient::new("owner".to_string(), "token".to_string());
     }
 }
