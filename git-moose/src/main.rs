@@ -97,6 +97,9 @@ fn main() -> () {
     for result in results {
         println!("{}: {}", result.username, result.token);
     }
+
+    let github_token = env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN not set");
+    println!("{}", github_token);
 }
 
 #[cfg(not(windows))]

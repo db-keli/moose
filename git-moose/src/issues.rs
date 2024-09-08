@@ -5,18 +5,22 @@ use crate::GITHUB_API_URL;
 use chrono::{DateTime, Utc};
 use reqwest::blocking::{Client, Response};
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
+use reqwest::StatusCode;
 use std::error::Error;
 
 impl GithubClient {
-    pub fn list_issues(&self, repo: &str) -> Result<Vec<Issue>, Box<dyn Error>> {
+    pub fn list_issues(&self, repo: &str) -> Result<(reqwest::StatusCode, Vec<Issue>), Box<dyn Error>> {
         let url = format!("{}/repos/{}/{}/issues", GITHUB_API_URL, self.owner, repo);
-        let issues = self
+        let response = self
             .client
             .get(&url)
             .headers(self.build_headers())
-            .send()?
-            .json()?;
-        Ok(issues)
+            .send()?;
+        
+        let status: StatusCode = response.status();
+        let issues: Vec<Issue> = response.json()?;
+
+        Ok((status, issues))
     }
 
     pub fn create_issue(
@@ -102,15 +106,5 @@ impl GithubClient {
             .send()?
             .json()?;
         Ok(comments)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn auth_test() {
-        let client = GithubClient::new("owner".to_string(), "token".to_string());
     }
 }
