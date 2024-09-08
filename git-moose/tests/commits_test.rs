@@ -17,3 +17,21 @@ fn test_get_commits() {
     let status = issues.0;
     assert_eq!(status, 200);
 }
+
+#[test]
+fn test_create_issue() {
+    dotenv().ok();
+    let token = env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN not set");
+    let owner = env::var("GITHUB_OWNER").expect("GITHUB_OWNER not set");
+    let title = "Test issue";
+    let body = "This is a test issue.";
+    let client = GithubClient::new(token, owner);
+    let issue = CreateIssue {
+        title: title.to_string(),
+        body: body.to_string(),
+    };
+
+    let response = client.create_issue(&issue, "moose").unwrap();
+    let status = response.status();
+    assert_eq!(status, 201);
+}
